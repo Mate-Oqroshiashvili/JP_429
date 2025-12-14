@@ -4,24 +4,24 @@ import {
   signal,
   computed,
   DestroyRef,
-} from '@angular/core';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { Store } from '@ngxs/store';
-import { GeneralWebSocketService } from './general-websocket.service';
-import { InvitationWebSocketService } from './invitation-web-socket.service';
-import { InvitationActions } from '../store/actions';
-import { distinctUntilChanged } from 'rxjs/operators';
+} from "@angular/core";
+import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
+import { Store } from "@ngxs/store";
+import { GeneralWebSocketService } from "./general-websocket.service";
+import { InvitationWebSocketService } from "./invitation-web-socket.service";
+import { InvitationActions } from "../store/actions";
+import { distinctUntilChanged } from "rxjs/operators";
 
 export enum WebSocketStatus {
-  DISCONNECTED = 'DISCONNECTED',
-  CONNECTING = 'CONNECTING',
-  CONNECTED = 'CONNECTED',
-  RECONNECTING = 'RECONNECTING',
-  ERROR = 'ERROR',
+  DISCONNECTED = "DISCONNECTED",
+  CONNECTING = "CONNECTING",
+  CONNECTED = "CONNECTED",
+  RECONNECTING = "RECONNECTING",
+  ERROR = "ERROR",
 }
 
 @Injectable({
-  providedIn: 'root',
+  providedIn: "root",
 })
 export class WebSocketManager {
   private generalWs = inject(GeneralWebSocketService);
@@ -55,14 +55,14 @@ export class WebSocketManager {
 
   async initialize(userId: number): Promise<void> {
     if (this.isConnected() && this.currentUserId() === userId) {
-      console.log('WebSocket already initialized for this user');
+      console.log("WebSocket already initialized for this user");
       return;
     }
 
-    const token = localStorage.getItem('access_token');
+    const token = localStorage.getItem("access_token");
     if (!token) {
       this.status.set(WebSocketStatus.ERROR);
-      throw new Error('No access token found');
+      throw new Error("No access token found");
     }
 
     this.status.set(WebSocketStatus.CONNECTING);
@@ -78,10 +78,8 @@ export class WebSocketManager {
 
       this.status.set(WebSocketStatus.CONNECTED);
       this.reconnectAttempts.set(0);
-
-      console.log('WebSocket initialized successfully for user:', userId);
     } catch (error) {
-      console.error('Failed to initialize WebSocket:', error);
+      console.error("Failed to initialize WebSocket:", error);
       this.status.set(WebSocketStatus.ERROR);
       this.handleConnectionError();
       throw error;
@@ -99,11 +97,11 @@ export class WebSocketManager {
   async reconnect(): Promise<void> {
     const userId = this.currentUserId();
     if (!userId) {
-      throw new Error('No user ID available for reconnection');
+      throw new Error("No user ID available for reconnection");
     }
 
     if (!this.canReconnect()) {
-      console.error('Max reconnection attempts reached');
+      console.error("Max reconnection attempts reached");
       this.status.set(WebSocketStatus.ERROR);
       return;
     }
@@ -118,14 +116,14 @@ export class WebSocketManager {
       );
       await this.initialize(userId);
     } catch (error) {
-      console.error('Reconnection failed:', error);
+      console.error("Reconnection failed:", error);
       this.scheduleReconnect();
     }
   }
 
   subscribeToPost(postId: number): void {
     if (!this.isConnected()) {
-      console.warn('Cannot subscribe to post: WebSocket not connected');
+      console.warn("Cannot subscribe to post: WebSocket not connected");
       return;
     }
     this.generalWs.subscribeToPostComments(postId);
@@ -137,7 +135,7 @@ export class WebSocketManager {
 
   subscribeToConversation(conversationId: number): void {
     if (!this.isConnected()) {
-      console.warn('Cannot subscribe to conversation: WebSocket not connected');
+      console.warn("Cannot subscribe to conversation: WebSocket not connected");
       return;
     }
     this.generalWs.subscribeToConversation(conversationId);
@@ -157,7 +155,7 @@ export class WebSocketManager {
       .pipe(distinctUntilChanged(), takeUntilDestroyed(this.destroyRef))
       .subscribe((isConnected) => {
         if (!isConnected && this.status() === WebSocketStatus.CONNECTED) {
-          console.warn('WebSocket connection lost');
+          console.warn("WebSocket connection lost");
           this.handleConnectionLost();
         }
       });
@@ -200,7 +198,7 @@ export class WebSocketManager {
     this.clearReconnectTimeout();
 
     if (!this.canReconnect()) {
-      console.error('Max reconnection attempts reached');
+      console.error("Max reconnection attempts reached");
       return;
     }
 

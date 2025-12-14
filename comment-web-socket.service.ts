@@ -56,7 +56,6 @@ export class CommentWebSocketService {
           reject(frame);
         },
         onWebSocketClose: () => {
-          console.log('Comment WebSocket closed');
           this.connectionStatus$.next(false);
           this.connectionPromise = null;
         },
